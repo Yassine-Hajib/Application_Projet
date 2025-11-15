@@ -60,3 +60,4 @@ Télécharger la version Windows
 
 7. Lancer l'application
     flutter run
+    8.test push
