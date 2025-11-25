@@ -60,3 +60,7 @@ Télécharger la version Windows
 
 7. Lancer l'application
     flutter run
+
+
+
+To Run The Project On chrome use This Commande : flutter run -d chrome
