@@ -1,177 +1,254 @@
 import 'package:flutter/material.dart';
 
 class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
   @override
-  _SignupPageState createState() => _SignupPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
 class _SignupPageState extends State<SignupPage> {
-  // Controllers
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
-  // Selected user type
-  String userType = "support"; // default
+  // common fields
+  final nameCtrl = TextEditingController();
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+
+  String selectedRole = "Supporteur";
+
+  // chauffeur fields
+  final carBrandCtrl = TextEditingController();
+  final carModelCtrl = TextEditingController();
+  String carEtat = "Bon";
+  final permisTypeCtrl = TextEditingController();
+  final permisYearCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
+  final matriculeCtrl = TextEditingController();
+  final cityCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    emailCtrl.dispose();
+    passCtrl.dispose();
+    carBrandCtrl.dispose();
+    carModelCtrl.dispose();
+    permisTypeCtrl.dispose();
+    permisYearCtrl.dispose();
+    phoneCtrl.dispose();
+    matriculeCtrl.dispose();
+    cityCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(25),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // -----------------------
-              // Title
-              // -----------------------
-              const Text(
-                "Créer un compte",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 5),
-              const Text(
-                "Inscrivez-vous pour continuer",
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-
-              const SizedBox(height: 40),
-
-              // -----------------------
-              // Username
-              // -----------------------
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: "Nom d'utilisateur",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // -----------------------
-              // Password
-              // -----------------------
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Mot de passe",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              // -----------------------
-              // USER TYPE DROPDOWN
-              // -----------------------
-              const Text(
-                "Type d'utilisateur",
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 5),
-
-              DropdownButtonFormField<String>(
-                value: userType,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: "support", child: Text("Supporteur")),
-                  DropdownMenuItem(
-                    value: "chauffeur",
-                    child: Text("Chauffeur"),
-                  ),
-                  DropdownMenuItem(value: "admin", child: Text("Admin")),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    userType = value!;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 35),
-
-              // -----------------------
-              // SIGNUP BUTTON
-              // -----------------------
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                onPressed: () {
-                  _handleSignup(context);
-                },
-                child: const Text(
-                  "S'inscrire",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // -----------------------
-              // Already have account?
-              // -----------------------
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.grey.shade200,
+      body: Center(
+        child: Container(
+          width: 520,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text("Vous avez déjà un compte ? "),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, '/login');
-                    },
-                    child: const Text(
-                      "Se connecter",
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
+                  const Text(
+                    'Créer un compte',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Name
+                  TextFormField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(labelText: 'Nom complet'),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Requis' : null,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Email
+                  TextFormField(
+                    controller: emailCtrl,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                    validator: (v) => (v == null || !v.contains('@'))
+                        ? 'Email invalide'
+                        : null,
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Password
+                  TextFormField(
+                    controller: passCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Mot de passe',
+                    ),
+                    obscureText: true,
+                    validator: (v) =>
+                        (v == null || v.length < 6) ? 'Min 6 caractères' : null,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Role
+                  DropdownButtonFormField<String>(
+                    value: selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Type d\'utilisateur',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: "Supporteur",
+                        child: Text("Supporteur"),
+                      ),
+                      DropdownMenuItem(
+                        value: "Chauffeur",
+                        child: Text("Chauffeur"),
+                      ),
+                      DropdownMenuItem(value: "Admin", child: Text("Admin")),
+                    ],
+                    onChanged: (v) =>
+                        setState(() => selectedRole = v ?? "Supporteur"),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Chauffeur extra fields
+                  if (selectedRole == 'Chauffeur') ...[
+                    const Divider(),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Informations Chauffeur',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: carBrandCtrl,
+                      decoration: const InputDecoration(labelText: 'Marque'),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: carModelCtrl,
+                      decoration: const InputDecoration(labelText: 'Modèle'),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    DropdownButtonFormField<String>(
+                      value: carEtat,
+                      decoration: const InputDecoration(
+                        labelText: 'Etat du véhicule',
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Neuf', child: Text('Neuf')),
+                        DropdownMenuItem(value: 'Bon', child: Text('Bon')),
+                        DropdownMenuItem(value: 'Moyen', child: Text('Moyen')),
+                        DropdownMenuItem(
+                          value: 'Mauvais',
+                          child: Text('Mauvais'),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => carEtat = v ?? 'Bon'),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: permisTypeCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Type de permis',
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: permisYearCtrl,
+                      decoration: const InputDecoration(
+                        labelText: "Année d'obtention du permis",
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: phoneCtrl,
+                      decoration: const InputDecoration(labelText: 'Téléphone'),
+                      keyboardType: TextInputType.phone,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: matriculeCtrl,
+                      decoration: const InputDecoration(labelText: 'Matricule'),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextFormField(
+                      controller: cityCtrl,
+                      decoration: const InputDecoration(labelText: 'Ville'),
+                    ),
+
+                    const SizedBox(height: 12),
+                  ],
+
+                  // Simple signup button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _handleSignup,
+                      child: const Text('Créer le compte'),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/'),
+                    child: const Text('Déjà un compte ? Se connecter'),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ============================================
-  // SIGNUP LOGIC (POO)
-  // ============================================
-  void _handleSignup(BuildContext context) {
-    if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
-      _showMessage(context, "Veuillez remplir tous les champs.");
-      return;
-    }
+  void _handleSignup() {
+    // keep button simple: validate basic fields only
+    if (!_formKey.currentState!.validate()) return;
 
-    // REDIRECT BASED ON USER TYPE
-    if (userType == "admin") {
-      Navigator.pushNamed(context, '/admin_home');
-    } else if (userType == "chauffeur") {
-      Navigator.pushNamed(context, '/chauffeur_home');
+    // Here you would send data to backend and create user.
+    // After success -> redirect according to role:
+    if (selectedRole == 'Admin') {
+      Navigator.pushReplacementNamed(context, '/admin_home');
+    } else if (selectedRole == 'Chauffeur') {
+      Navigator.pushReplacementNamed(context, '/chauffeur_home');
     } else {
-      Navigator.pushNamed(context, '/support_home');
+      Navigator.pushReplacementNamed(context, '/support_home');
     }
-  }
-
-  // Simple popup message
-  void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
   }
 }

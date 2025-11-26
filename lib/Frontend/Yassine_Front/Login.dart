@@ -1,78 +1,121 @@
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final emailController = TextEditingController();
-  final passController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
 
-  String selectedType = "support";
+  String selectedRole = "Supporteur"; // default
+
+  @override
+  void dispose() {
+    emailCtrl.dispose();
+    passCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login"), backgroundColor: Colors.green),
+      backgroundColor: Colors.grey.shade200,
+      body: Center(
+        child: Container(
+          width: 420,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Se connecter',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: "Email"),
-            ),
+                TextFormField(
+                  controller: emailCtrl,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  validator: (v) =>
+                      (v == null || !v.contains('@')) ? 'Email invalide' : null,
+                ),
 
-            TextField(
-              controller: passController,
-              decoration: InputDecoration(labelText: "Password"),
-              obscureText: true,
-            ),
+                const SizedBox(height: 10),
 
-            const SizedBox(height: 15),
+                TextFormField(
+                  controller: passCtrl,
+                  decoration: const InputDecoration(labelText: 'Mot de passe'),
+                  obscureText: true,
+                  validator: (v) =>
+                      (v == null || v.length < 6) ? 'Min 6 caractères' : null,
+                ),
 
-            DropdownButtonFormField(
-              value: selectedType,
-              items: const [
-                DropdownMenuItem(value: "admin", child: Text("Admin")),
-                DropdownMenuItem(value: "chauffeur", child: Text("Chauffeur")),
-                DropdownMenuItem(value: "support", child: Text("Supporteur")),
+                const SizedBox(height: 12),
+
+                DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  decoration: const InputDecoration(labelText: 'Type d\'utilisateur'),
+                  items: const [
+                    DropdownMenuItem(value: "Admin", child: Text("Admin")),
+                    DropdownMenuItem(value: "Chauffeur", child: Text("Chauffeur")),
+                    DropdownMenuItem(value: "Supporteur", child: Text("Supporteur")),
+                  ],
+                  onChanged: (v) => setState(() => selectedRole = v ?? "Supporteur"),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Login button (simple)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _handleLogin,
+                    child: const Text('Se connecter'),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Pas de compte ?"),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/signup'),
+                      child: const Text('S\'inscrire'),
+                    ),
+                  ],
+                ),
               ],
-              onChanged: (value) {
-                setState(() {
-                  selectedType = value.toString();
-                });
-              },
             ),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              onPressed: () {
-                if (selectedType == "admin") {
-                  Navigator.pushNamed(context, '/admin_home');
-                } else if (selectedType == "chauffeur") {
-                  Navigator.pushNamed(context, '/chauffeur_home');
-                } else {
-                  Navigator.pushNamed(context, '/support_home');
-                }
-              },
-              child: Text("Login", style: TextStyle(color: Colors.white)),
-            ),
-
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/signup'),
-              child: Text("Create a new account"),
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  void _handleLogin() {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Here you would check credentials / backend.
+    // For now: redirect based on selectedRole:
+    if (selectedRole == 'Admin') {
+      Navigator.pushReplacementNamed(context, '/admin_home');
+    } else if (selectedRole == 'Chauffeur') {
+      Navigator.pushReplacementNamed(context, '/chauffeur_home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/support_home');
+    }
   }
 }

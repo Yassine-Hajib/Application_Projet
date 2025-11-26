@@ -11,7 +11,6 @@ class AdminHomePage extends StatelessWidget {
         title: const Text("Admin Dashboard"),
         centerTitle: true,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -21,15 +20,13 @@ class AdminHomePage extends StatelessWidget {
               "Welcome Admin 👋",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 20),
-
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
-                children: [
+                children: const [
                   DashboardCard(
                     icon: Icons.people,
                     title: "Manage Users",
@@ -60,9 +57,6 @@ class AdminHomePage extends StatelessWidget {
   }
 }
 
-/// **************
-///  POO CLASS CARD
-/// **************
 class DashboardCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -83,7 +77,7 @@ class DashboardCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
       ),
       child: InkWell(
-        onTap: () {}, // ADD ACTION HERE
+        onTap: () {},
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

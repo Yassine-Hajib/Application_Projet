@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ChauffeurHomePage extends StatelessWidget {
-  const ChauffeurHomePage({super.key});
+class ChauffeurAcceuil extends StatelessWidget {
+  const ChauffeurAcceuil({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,6 @@ class ChauffeurHomePage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.green,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -21,13 +20,9 @@ class ChauffeurHomePage extends StatelessWidget {
               "Bonjour Chauffeur 🚐",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 20),
-
             _infoCard(),
-
             const SizedBox(height: 20),
-
             Expanded(
               child: ListView(
                 children: const [
@@ -60,7 +55,6 @@ class ChauffeurHomePage extends StatelessWidget {
     );
   }
 
-  /// Card Info (POO)
   Widget _infoCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -88,9 +82,6 @@ class ChauffeurHomePage extends StatelessWidget {
   }
 }
 
-/// **************
-///  LIST TILE CLASS (POO)
-/// **************
 class ChauffeurActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -110,7 +101,7 @@ class ChauffeurActionTile extends StatelessWidget {
         leading: Icon(icon, size: 32, color: Colors.green),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
-        onTap: () {}, // ADD ACTION HERE
+        onTap: () {},
       ),
     );
   }
