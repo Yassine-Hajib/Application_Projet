@@ -10,17 +10,16 @@
         private $date_inscription;
 
         //----------------------------constucteur----------------------------
-        public function __construct($nom, $prenom, $email, $mot_de_passe, $telephone, $role = "supporter") {
+        public function __construct($nom, $prenom, $email, $mot_de_passe, $telephone) {
             $this->nom_utilisateur = $nom;
             $this->prenom_utilisateur = $prenom;
             $this->email_utilisateur = $email;
             $this->mot_de_passe_utilisateur = password_hash($mot_de_passe, PASSWORD_DEFAULT);
             $this->telephone_utilisateur = $telephone;
-            $this->role_utilisateur = $role;
             $this->date_inscription = date("Y-m-d H:i:s");
         }
 
-        //----------------------------geters----------------------------
+        //----------------------------geters-------------------------------
         public function getId() {
             return $this->id_utilisateur;
         }
@@ -92,6 +91,7 @@
                 return false;
             }
 
+            //----------------------------supprimer----------------------------
             public function supprimerCompte($odc, $id){
                 $query = "DELETE FROM utilisateur WHERE id_utilisateur = ?";
                 $stmt = $odc->prepare($query);
