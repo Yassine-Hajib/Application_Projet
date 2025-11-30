@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+// Import your pages
 import 'Frontend/yassine_front/Login.dart';
 import 'Frontend/yassine_front/Signup.dart';
 import 'Frontend/yassine_front/admin_acceuil.dart';
@@ -18,14 +20,23 @@ class MyApp extends StatelessWidget {
       title: 'Transport CAN 2025',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.green),
+
+      /// -----------------------------
+      /// Initial route (Login Page)
+      /// -----------------------------
       initialRoute: '/',
+
+      /// -----------------------------
+      /// App routes
+      /// -----------------------------
       routes: {
-        '/': (context) => const LoginPage(),
-        '/signup': (context) => const SignupPage(),
-        // These must match the class names in your files:
-        '/admin_home': (context) => const AdminHomePage(),
-        '/chauffeur_home': (context) => const ChauffeurAcceuil(),
-        '/support_home': (context) => const SupporteurAccueil(),
+        '/': (context) => const LoginPage(), // Login
+        '/signup': (context) => const SignupPage(), // Signup
+        '/admin_home': (context) => const AdminHomePage(), // Admin dashboard
+        '/chauffeur_home': (context) =>
+            ChauffeurHomePage(), // Chauffeur dashboard
+        '/support_home': (context) =>
+            const SupporteurAcceuil(), // Supporter dashboard
       },
     );
   }

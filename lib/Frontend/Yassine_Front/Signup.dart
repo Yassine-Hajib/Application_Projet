@@ -12,33 +12,29 @@ class _SignupPageState extends State<SignupPage> {
 
   // common fields
   final nameCtrl = TextEditingController();
+  final prenomCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
 
   String selectedRole = "Supporteur";
 
   // chauffeur fields
   final carBrandCtrl = TextEditingController();
   final carModelCtrl = TextEditingController();
-  String carEtat = "Bon";
-  final permisTypeCtrl = TextEditingController();
-  final permisYearCtrl = TextEditingController();
-  final phoneCtrl = TextEditingController();
   final matriculeCtrl = TextEditingController();
-  final cityCtrl = TextEditingController();
+  String carEtat = "En service";
 
   @override
   void dispose() {
     nameCtrl.dispose();
+    prenomCtrl.dispose();
     emailCtrl.dispose();
     passCtrl.dispose();
+    phoneCtrl.dispose();
     carBrandCtrl.dispose();
     carModelCtrl.dispose();
-    permisTypeCtrl.dispose();
-    permisYearCtrl.dispose();
-    phoneCtrl.dispose();
     matriculeCtrl.dispose();
-    cityCtrl.dispose();
     super.dispose();
   }
 
@@ -70,9 +66,14 @@ class _SignupPageState extends State<SignupPage> {
                   // Name
                   TextFormField(
                     controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: 'Nom complet'),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Requis' : null,
+                    decoration: const InputDecoration(labelText: 'Nom'),
+                    validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
+                  ),
+
+                  TextFormField(
+                    controller: prenomCtrl,
+                    decoration: const InputDecoration(labelText: 'Prénom'),
+                    validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
                   ),
 
                   const SizedBox(height: 8),
@@ -81,9 +82,15 @@ class _SignupPageState extends State<SignupPage> {
                   TextFormField(
                     controller: emailCtrl,
                     decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (v) => (v == null || !v.contains('@'))
-                        ? 'Email invalide'
-                        : null,
+                    validator: (v) =>
+                        (v == null || !v.contains('@')) ? 'Email invalide' : null,
+                  ),
+
+                  // Téléphone
+                  TextFormField(
+                    controller: phoneCtrl,
+                    decoration: const InputDecoration(labelText: 'Téléphone'),
+                    keyboardType: TextInputType.phone,
                   ),
 
                   const SizedBox(height: 8),
@@ -91,9 +98,7 @@ class _SignupPageState extends State<SignupPage> {
                   // Password
                   TextFormField(
                     controller: passCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Mot de passe',
-                    ),
+                    decoration: const InputDecoration(labelText: 'Mot de passe'),
                     obscureText: true,
                     validator: (v) =>
                         (v == null || v.length < 6) ? 'Min 6 caractères' : null,
@@ -104,18 +109,13 @@ class _SignupPageState extends State<SignupPage> {
                   // Role
                   DropdownButtonFormField<String>(
                     value: selectedRole,
-                    decoration: const InputDecoration(
-                      labelText: 'Type d\'utilisateur',
-                    ),
+                    decoration:
+                        const InputDecoration(labelText: 'Type d\'utilisateur'),
                     items: const [
                       DropdownMenuItem(
-                        value: "Supporteur",
-                        child: Text("Supporteur"),
-                      ),
+                          value: "Supporteur", child: Text("Supporteur")),
                       DropdownMenuItem(
-                        value: "Chauffeur",
-                        child: Text("Chauffeur"),
-                      ),
+                          value: "Chauffeur", child: Text("Chauffeur")),
                       DropdownMenuItem(value: "Admin", child: Text("Admin")),
                     ],
                     onChanged: (v) =>
@@ -130,68 +130,27 @@ class _SignupPageState extends State<SignupPage> {
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Informations Chauffeur',
+                        "Informations Chauffeur",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(height: 8),
 
-                    TextFormField(
-                      controller: carBrandCtrl,
-                      decoration: const InputDecoration(labelText: 'Marque'),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: carModelCtrl,
-                      decoration: const InputDecoration(labelText: 'Modèle'),
-                    ),
-
-                    const SizedBox(height: 8),
-
                     DropdownButtonFormField<String>(
                       value: carEtat,
-                      decoration: const InputDecoration(
-                        labelText: 'Etat du véhicule',
-                      ),
+                      decoration:
+                          const InputDecoration(labelText: 'État du véhicule'),
                       items: const [
-                        DropdownMenuItem(value: 'Neuf', child: Text('Neuf')),
-                        DropdownMenuItem(value: 'Bon', child: Text('Bon')),
-                        DropdownMenuItem(value: 'Moyen', child: Text('Moyen')),
                         DropdownMenuItem(
-                          value: 'Mauvais',
-                          child: Text('Mauvais'),
-                        ),
+                            value: 'En service', child: Text('En service')),
+                        DropdownMenuItem(
+                            value: 'En Maintenance',
+                            child: Text('En Maintenance')),
+                        DropdownMenuItem(
+                            value: 'Hors Service', child: Text('Hors Service')),
                       ],
-                      onChanged: (v) => setState(() => carEtat = v ?? 'Bon'),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: permisTypeCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Type de permis',
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: permisYearCtrl,
-                      decoration: const InputDecoration(
-                        labelText: "Année d'obtention du permis",
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: phoneCtrl,
-                      decoration: const InputDecoration(labelText: 'Téléphone'),
-                      keyboardType: TextInputType.phone,
+                      onChanged: (v) =>
+                          setState(() => carEtat = v ?? 'En service'),
                     ),
 
                     const SizedBox(height: 8),
@@ -202,31 +161,21 @@ class _SignupPageState extends State<SignupPage> {
                     ),
 
                     const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: cityCtrl,
-                      decoration: const InputDecoration(labelText: 'Ville'),
-                    ),
-
-                    const SizedBox(height: 12),
                   ],
 
-                  // Simple signup button
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
                       onPressed: _handleSignup,
-                      child: const Text('Créer le compte'),
+                      child: const Text("Créer le compte"),
                     ),
                   ),
-
-                  const SizedBox(height: 8),
 
                   TextButton(
                     onPressed: () =>
                         Navigator.pushReplacementNamed(context, '/'),
-                    child: const Text('Déjà un compte ? Se connecter'),
+                    child: const Text("Déjà un compte ? Se connecter"),
                   ),
                 ],
               ),
@@ -238,11 +187,8 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   void _handleSignup() {
-    // keep button simple: validate basic fields only
     if (!_formKey.currentState!.validate()) return;
 
-    // Here you would send data to backend and create user.
-    // After success -> redirect according to role:
     if (selectedRole == 'Admin') {
       Navigator.pushReplacementNamed(context, '/admin_home');
     } else if (selectedRole == 'Chauffeur') {
