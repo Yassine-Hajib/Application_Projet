@@ -110,6 +110,6 @@ class Chauffeur {
     //fct qui lie entre chauffeu et véhicule 
     // en premier, on voit si le chauff est dispo, de meme pour véhicule, après on affiche un mess bli chauff est affecté 
     //au véhic, puis on switch avec une fct switch qui switch dispo de véhic et une autre pour la meme chose 
-    //pour le chauffeur hhh
+    //pour le chauffeur
 }
 ?>
