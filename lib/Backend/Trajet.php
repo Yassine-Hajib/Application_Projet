@@ -1,26 +1,17 @@
 
 
-
 <?php
 class Trajet {
 
-    private int $idTrajet;
-    private string $pointDepart;
-    private string $pointArrivee;
-    private float $distance;
-    private string $dureeEstimee;     
-    private string $heureDepart;      
-    private string $heureArrivee;    
+    private $idTrajet;
+    private $pointDepart;
+    private  $pointArrivee;
+    private  $distance;
+    private  $dureeEstimee;     
+    private  $heureDepart;      
+    private  $heureArrivee;    
 
-    public function __construct(
-        int $idTrajet,
-        string $pointDepart,
-        string $pointArrivee,
-        float $distance,
-        string $dureeEstimee,
-        string $heureDepart,
-        string $heureArrivee
-    ) {
+    public function __construct(  $idTrajet,$pointDepart,$pointArrivee,$distance,$dureeEstimee,$heureDepart,$heureArrivee ) {
         $this->idTrajet     = $idTrajet;
         $this->pointDepart  = $pointDepart;
         $this->pointArrivee = $pointArrivee;
@@ -148,13 +139,17 @@ public function setHeureArrivee(string $heureArrivee){
         ]);
     }
 // affichage
- public function __toString(){
- return "Trajet $this->idTrajet <br>". "Départ : $this->pointDepart<br>". "Arrivée : $this->pointArrivee<br>"
-  . "Distance : $this->distance km<br>". "Durée estimée : $this->dureeEstimee <br>"
-  . "Heure départ : $this->heureDepart<br>"
-            . "Heure arrivée : $this->heureArrivee <br>";
-    }  
- 
+ public function afficher() {
+    echo "Trajet :". $this->idTrajet ."<br>";
+    echo "Départ :" . $this->pointDepart."<br>";
+    echo "Arrivée " . $this->pointArrivee."<br>";
+    echo "Distance :" . $this->distance. "km"."<br>";
+    echo "Durée estimée :". $this->dureeEstimee."<br>";
+    echo "Heure départ :". $this->heureDepart."<br>";
+    echo "Heure arrivée :" . $this->heureArrivee."<br>";
+}
+
 
    
 }
+
