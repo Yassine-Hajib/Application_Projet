@@ -107,9 +107,54 @@ class Chauffeur {
         echo "Email : ". $this->email ."<br>";
         echo "Statut : ". $this->statut ."<br>";
     }
-    //fct qui lie entre chauffeu et véhicule 
-    // en premier, on voit si le chauff est dispo, de meme pour véhicule, après on affiche un mess bli chauff est affecté 
-    //au véhic, puis on switch avec une fct switch qui switch dispo de véhic et une autre pour la meme chose 
-    //pour le chauffeur
+    //switch chauffeur
+      private function switchChauffeur($pdo, $id_chauffeur) {
+    $sql = "UPDATE chauffeurs SET statut_chauffeur = 'occupé' WHERE id_chauffeur = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id_chauffeur]);
+}
+
+    // switch véhicule
+
+   private function switchVehicule($pdo, $id_vehicule) {
+    $sql = "UPDATE vehicules SET disponibilite_vehicule = 'occupé' WHERE id_vehicule = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id_vehicule]);
+}
+
+
+    //fct qui lie entre chauffeur et véhicule 
+  public function lierChauffeurVehicule($pdo, $id_chauffeur, $id_vehicule) {
+
+    
+    $sql = "SELECT statut_chauffeur FROM chauffeurs WHERE id_chauffeur = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id_chauffeur]);
+    $chauffeur = $stmt->fetch();
+
+    if ($chauffeur['statut_chauffeur'] !== 'disponible') {
+        echo "Le chauffeur n'est pas disponible.";
+        return;
+    }
+
+   
+    $sql = "SELECT disponibilite_vehicule FROM vehicules WHERE id_vehicule = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id_vehicule]);
+    $vehicule = $stmt->fetch();
+
+    if ($vehicule['disponibilite_vehicule'] !== 'disponible') {
+        echo "Le véhicule n'est pas disponible.";
+        return;
+    }
+
+  
+    echo "Le chauffeur est affecté au véhicule.";
+
+  
+    $this->switchChauffeur($pdo, $id_chauffeur);
+    $this->switchVehicule($pdo, $id_vehicule);
+}
+
 }
 ?>
