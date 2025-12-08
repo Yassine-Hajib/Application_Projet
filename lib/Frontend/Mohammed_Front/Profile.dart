@@ -11,7 +11,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Variables to hold the real data
+  
   String fullName = "Chargement...";
   String email = "...";
   String phone = "...";
@@ -20,7 +20,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData(); // Load data when page starts
+    _loadUserData();
   }
 
   // -------------------------------------------------------
@@ -44,7 +44,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // -------------------------------------------------------
   Future<void> _handleLogout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // DELETE ALL DATA
+    await prefs.clear(); 
     
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(

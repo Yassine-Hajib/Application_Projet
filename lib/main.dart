@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
       ),
 
       // ---------------- STARTING PAGE ----------------
-      // Now starts at Login
       home: const LoginPage(),
     );
   }

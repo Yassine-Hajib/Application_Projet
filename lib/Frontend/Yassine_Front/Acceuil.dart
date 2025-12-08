@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 
 // -----------------------------------------------------------
-// IMPORTS (Checked against your file structure screenshot)
+// IMPORTS
 // -----------------------------------------------------------
 import 'Stades.dart';
-// import 'Trajet.dart'; 
+// NOUVEL IMPORT: Importation de la page de suivi
+import '../Sara_Front/suivie.dart'; 
 
 import '../Hiba_Front/Reservation.dart';
 import '../Hiba_Front/Evaluation.dart';
 import '../Mohammed_Front/Parametres.dart';
 import '../Mohammed_Front/Profile.dart';
 import '../Rachid_Front/Aide.dart';
-import '../Rachid_Front/aboutus.dart'; // Note: your file is lowercase 'aboutus.dart'
+import '../Rachid_Front/aboutus.dart';
 
 class SupporteurAcceuil extends StatelessWidget {
   const SupporteurAcceuil({super.key});
 
+  // LISTE MISE À JOUR : 'Trajets' remplacé par 'Suivi des Matchs'
   final List<MenuItem> menuItems = const [
     MenuItem(
-        icon: Icons.directions_bus_filled,
-        title: "Trajets",
-        subtitle: "Voir les trajets disponibles"),
+        // Icône et titre mis à jour pour 'Suivi des Matchs'
+        icon: Icons.live_tv_rounded, 
+        title: "Suivi des Matchs",
+        subtitle: "Matchs en direct et à venir"),
     MenuItem(
         icon: Icons.stadium,
         title: "Stades",
@@ -52,9 +55,16 @@ class SupporteurAcceuil extends StatelessWidget {
     const Color moroccoRed = Color(0xFFC1272D);
     const Color darkRed = Color(0xFF8A1C21);
     const Color moroccoGreen = Color(0xFF006233);
+    
+    // Ajout de la logique Dark Mode pour les couleurs de la tuile et du texte
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final Color textColor = Theme.of(context).textTheme.bodyLarge!.color!;
+
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      // Utilisation du fond d'écran dynamique
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           // ----------------- HEADER (WAVE DESIGN) -----------------
@@ -104,13 +114,11 @@ class SupporteurAcceuil extends StatelessWidget {
             ],
           ),
 
-          // ----------------- INFO TEXT (UPDATED) -----------------
-          // Replaced the generic "i" with a Ticket Icon + Clean Text
+          // ----------------- INFO TEXT (Adapté au Dark Mode) -----------------
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
             child: Row(
               children: [
-                // Change: Ticket icon looks more relevant than 'info'
                 Icon(Icons.local_activity_outlined, color: moroccoGreen, size: 26),
                 const SizedBox(width: 12),
                 Expanded(
@@ -118,8 +126,9 @@ class SupporteurAcceuil extends StatelessWidget {
                     "Réservez vos trajets et suivez tous les événements facilement.",
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade800,
-                      fontWeight: FontWeight.w600, // Slightly bolder for readability
+                      // Couleur dynamique du texte
+                      color: isDark ? Colors.white70 : Colors.grey.shade800, 
+                      fontWeight: FontWeight.w600,
                       height: 1.3,
                     ),
                   ),
@@ -140,6 +149,9 @@ class SupporteurAcceuil extends StatelessWidget {
                   title: item.title,
                   subtitle: item.subtitle,
                   accentColor: moroccoGreen,
+                  // Passage des couleurs dynamiques au widget SupporterMenuTile
+                  cardColor: cardColor, 
+                  textColor: textColor,
                   onTap: () => _navigateToPage(context, item.title),
                 );
               },
@@ -154,6 +166,11 @@ class SupporteurAcceuil extends StatelessWidget {
   void _navigateToPage(BuildContext context, String title) {
     switch (title) {
       
+      // CAS MIS À JOUR: Navigue vers SuiviPage
+      case "Suivi des Matchs":
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const SuiviPage()));
+        break;
+
       case "Stades":
         Navigator.push(context, MaterialPageRoute(builder: (_) => const StadesPage()));
         break;
@@ -199,23 +216,33 @@ class SupporterMenuTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color accentColor;
+  final Color cardColor; // Ajouté pour le Dark Mode
+  final Color textColor; // Ajouté pour le Dark Mode
   final VoidCallback onTap;
-  const SupporterMenuTile({super.key, required this.icon, required this.title, required this.subtitle, required this.accentColor, required this.onTap});
+  
+  const SupporterMenuTile({
+    super.key, required this.icon, required this.title, required this.subtitle, 
+    required this.accentColor, required this.onTap, required this.cardColor, required this.textColor
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Vérifie si le mode sombre est actif pour ajuster les couleurs de bordure
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor, // Couleur dynamique
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.05), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2))],
+        // Bordure uniquement en mode clair pour un look plus net en mode sombre
+        border: isDark ? null : Border.all(color: Colors.grey.shade100),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2))],
       ),
       child: ListTile(
         leading: Icon(icon, size: 28, color: accentColor),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textColor)), // Couleur dynamique
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)), 
         trailing: Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey.shade400),
         onTap: onTap,
       ),
