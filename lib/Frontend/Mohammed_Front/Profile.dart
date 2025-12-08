@@ -1,8 +1,58 @@
 import 'package:flutter/material.dart';
-import 'Parametres.dart'; // <--- 1. IMPORT ADDED
+import 'package:shared_preferences/shared_preferences.dart'; // IMPORT THIS
+import 'Parametres.dart'; 
+import '../Yassine_Front/Login.dart'; 
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // Variables to hold the real data
+  String fullName = "Chargement...";
+  String email = "...";
+  String phone = "...";
+  String role = "Supporteur";
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData(); // Load data when page starts
+  }
+
+  // -------------------------------------------------------
+  // LOAD DATA FROM PHONE MEMORY (SHARED PREFERENCES)
+  // -------------------------------------------------------
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      String nom = prefs.getString('nom') ?? "Utilisateur";
+      String prenom = prefs.getString('prenom') ?? "";
+      fullName = "$prenom $nom"; // Combine First + Last Name
+      
+      email = prefs.getString('email') ?? "Pas d'email";
+      phone = prefs.getString('telephone') ?? "Pas de numéro";
+      role = prefs.getString('role') ?? "Supporteur";
+    });
+  }
+
+  // -------------------------------------------------------
+  // LOGOUT (Clear data and go to Login)
+  // -------------------------------------------------------
+  Future<void> _handleLogout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // DELETE ALL DATA
+    
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,17 +60,12 @@ class ProfilePage extends StatelessWidget {
     const Color moroccoGreen = Color(0xFF006233);
     const Color darkRed = Color(0xFF8A1C21);
 
-    const String userfirstName = "John Doe";
-    const String email = "john.doe@example.com";
-    const String phone = "+212 6 12 34 56 78";
-    const String hi = "Supporter";
-    const String me = "VIP Access";
-
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // ----------------- HEADER (WAVE) -----------------
             Stack(
               children: [
                 ClipPath(
@@ -54,7 +99,6 @@ class ProfilePage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Back Button navigates back to ACCHEIL
                             InkWell(
                               onTap: () => Navigator.pop(context),
                               child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
@@ -71,6 +115,8 @@ class ProfilePage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 35),
+                        
+                        // ----------------- PROFILE INFO ROW -----------------
                         Row(
                           children: [
                             Container(
@@ -86,12 +132,20 @@ class ProfilePage extends StatelessWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(userfirstName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)),
+                                // REAL NAME DISPLAYED HERE
+                                Text(
+                                  fullName, 
+                                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)
+                                ),
                                 const SizedBox(height: 4),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(color: moroccoGreen, borderRadius: BorderRadius.circular(4)),
-                                  child: const Text("SUPPORTER OFFICIEL", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  // REAL ROLE DISPLAYED HERE
+                                  child: Text(
+                                    role.toUpperCase(), 
+                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)
+                                  ),
                                 ),
                               ],
                             ),
@@ -104,30 +158,27 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
 
+            // ----------------- INFO CARDS (REAL DATA) -----------------
             Padding(
               padding: const EdgeInsets.only(top: 0),
               child: Column(
                 children: [
                   _afconInfoCard(Icons.email_outlined, "Email", email, moroccoGreen),
                   _afconInfoCard(Icons.phone_outlined, "Téléphone", phone, moroccoGreen),
-                  _afconInfoCard(Icons.confirmation_number_outlined, "Statut", hi, moroccoGreen),
-                  _afconInfoCard(Icons.security, "Accès", me, moroccoGreen),
+                  _afconInfoCard(Icons.confirmation_number_outlined, "Statut", "Actif", moroccoGreen),
+                  _afconInfoCard(Icons.security, "Sécurité", "Vérifiée", moroccoGreen),
                 ],
               ),
             ),
 
             const SizedBox(height: 30),
 
-            // ----------------- MODIFIER PROFIL BUTTON (LINKED) -----------------
+            // ----------------- BUTTONS -----------------
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: ElevatedButton(
-                // 2. LOGIC UPDATED HERE:
                 onPressed: () {
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (context) => const ParametresPage())
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ParametresPage()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: moroccoGreen,
@@ -146,7 +197,7 @@ class ProfilePage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: _handleLogout, // LOGOUT FUNCTION
                 style: OutlinedButton.styleFrom(
                   foregroundColor: moroccoRed,
                   minimumSize: const Size(double.infinity, 55),
@@ -163,6 +214,8 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
+
+// ----------------- HELPER WIDGETS -----------------
 
 class StadiumWaveClipper extends CustomClipper<Path> {
   @override
@@ -203,13 +256,19 @@ Widget _afconInfoCard(IconData icon, String title, String value, Color accentCol
           child: Icon(icon, color: accentColor, size: 22),
         ),
         const SizedBox(width: 15),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade400, letterSpacing: 0.5)),
-            const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade400, letterSpacing: 0.5)),
+              const SizedBox(height: 2),
+              Text(
+                value, 
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ],
     ),
