@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // IMPORT THIS
+import 'package:shared_preferences/shared_preferences.dart'; 
 import 'Parametres.dart'; 
 import '../Yassine_Front/Login.dart'; 
 
@@ -23,15 +23,12 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
-  // -------------------------------------------------------
-  // LOAD DATA FROM PHONE MEMORY (SHARED PREFERENCES)
-  // -------------------------------------------------------
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       String nom = prefs.getString('nom') ?? "Utilisateur";
       String prenom = prefs.getString('prenom') ?? "";
-      fullName = "$prenom $nom"; // Combine First + Last Name
+      fullName = "$prenom $nom"; 
       
       email = prefs.getString('email') ?? "Pas d'email";
       phone = prefs.getString('telephone') ?? "Pas de numéro";
@@ -39,9 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  // -------------------------------------------------------
-  // LOGOUT (Clear data and go to Login)
-  // -------------------------------------------------------
   Future<void> _handleLogout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear(); 
@@ -116,9 +110,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 35),
                         
-                        // ----------------- PROFILE INFO ROW -----------------
                         Row(
                           children: [
+                            // ---------------------------------------------
+                            // --- AVATAR SECTION (NEW DESIGN) ---
+                            // ---------------------------------------------
                             Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
@@ -126,13 +122,24 @@ class _ProfilePageState extends State<ProfilePage> {
                                 border: Border.all(color: moroccoGreen, width: 3),
                                 color: Colors.white,
                               ),
-                              child: const CircleAvatar(radius: 32, backgroundImage: AssetImage("assets/avatar.png")),
+                              child: CircleAvatar(
+                                radius: 32,
+                                // Very light green background
+                                backgroundColor: moroccoGreen.withOpacity(0.1), 
+                                // Clean Vector Icon in Morocco Green
+                                child: const Icon(
+                                  Icons.person, 
+                                  size: 35, 
+                                  color: moroccoGreen
+                                ),
+                              ),
                             ),
+                            // ---------------------------------------------
+
                             const SizedBox(width: 20),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // REAL NAME DISPLAYED HERE
                                 Text(
                                   fullName, 
                                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)
@@ -141,7 +148,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(color: moroccoGreen, borderRadius: BorderRadius.circular(4)),
-                                  // REAL ROLE DISPLAYED HERE
                                   child: Text(
                                     role.toUpperCase(), 
                                     style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)
@@ -158,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
 
-            // ----------------- INFO CARDS (REAL DATA) -----------------
+            // ----------------- INFO CARDS -----------------
             Padding(
               padding: const EdgeInsets.only(top: 0),
               child: Column(
@@ -197,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: OutlinedButton(
-                onPressed: _handleLogout, // LOGOUT FUNCTION
+                onPressed: _handleLogout, 
                 style: OutlinedButton.styleFrom(
                   foregroundColor: moroccoRed,
                   minimumSize: const Size(double.infinity, 55),

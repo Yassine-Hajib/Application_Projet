@@ -1,11 +1,12 @@
-import 'dart:convert'; // For encoding JSON
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // For API Connection
-import 'package:shared_preferences/shared_preferences.dart'; // <--- IMPORT ADDED
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Imports
-import 'Acceuil.dart'; 
-import 'Login.dart';
+// --- IMPORTS ---
+import 'Acceuil.dart'; // Supporter Home
+import 'Login.dart';   // Login Page
+import '../Yassine_Front/Chauffeur_acceuil.dart'; // <--- CRITICAL IMPORT FOR CHAUFFEUR HOME
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -17,31 +18,135 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
+  // Common Fields
   final nameCtrl = TextEditingController();
   final prenomCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
 
-  // Chauffeur specific
-  final carModelCtrl = TextEditingController();
-  final matriculeCtrl = TextEditingController();
-  String carEtat = "En service";
+  // Chauffeur Specific Fields
+  final permisCtrl = TextEditingController();
+  final expirationCtrl = TextEditingController(); 
 
   String selectedRole = "Supporteur";
-  bool isLoading = false; // To show a loading spinner
+  bool isLoading = false;
+
+  // -------------------------------------------------------------
+  // API URL (Ensure port matches MAMP: 8888 or 80)
+  // -------------------------------------------------------------
+  final String apiUrl = "http://localhost:8888/Backend/api/signup.php"; 
 
   @override
   void dispose() {
-    nameCtrl.dispose();
-    prenomCtrl.dispose();
-    emailCtrl.dispose();
-    passCtrl.dispose();
-    phoneCtrl.dispose();
-    carModelCtrl.dispose();
-    matriculeCtrl.dispose();
+    nameCtrl.dispose(); prenomCtrl.dispose(); emailCtrl.dispose();
+    passCtrl.dispose(); phoneCtrl.dispose();
+    permisCtrl.dispose(); expirationCtrl.dispose();
     super.dispose();
+  }
+
+  // Date Picker Helper
+  Future<void> _selectDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 365)), 
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2040),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: const Color(0xFFC1272D),
+            colorScheme: const ColorScheme.light(primary: Color(0xFFC1272D)),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        // Format: YYYY-MM-DD for MySQL
+        expirationCtrl.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
+  // -------------------------------------------------------------
+  // SIGNUP LOGIC
+  // -------------------------------------------------------------
+  Future<void> _handleSignup() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "nom": nameCtrl.text,
+          "prenom": prenomCtrl.text,
+          "email": emailCtrl.text,
+          "password": passCtrl.text,
+          "phone": phoneCtrl.text,
+          "role": selectedRole,
+          // Specific fields sent only if Chauffeur is selected
+          "numero_permis": selectedRole == 'Chauffeur' ? permisCtrl.text : "",
+          "date_expiration": selectedRole == 'Chauffeur' ? expirationCtrl.text : "",
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        var jsonResponse = jsonDecode(response.body);
+        
+        if (jsonResponse['success'] == true) {
+          
+          // 1. Save Data Locally (SharedPreferences)
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('nom', nameCtrl.text);
+          await prefs.setString('prenom', prenomCtrl.text);
+          await prefs.setString('email', emailCtrl.text);
+          await prefs.setString('telephone', phoneCtrl.text);
+          await prefs.setString('role', selectedRole);
+          await prefs.setBool('isLoggedIn', true);
+
+          if(mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Bienvenue ${prenomCtrl.text} !"), backgroundColor: Colors.green),
+            );
+
+            // 2. SMART NAVIGATION BASED ON ROLE
+            if (selectedRole == 'Chauffeur') {
+               // Navigate to Chauffeur Dashboard
+               Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ChauffeurHomePage()));
+            } else {
+               // Navigate to Supporter Home
+               Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SupporteurAcceuil()));
+            }
+          }
+
+        } else {
+          if(mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Erreur: ${jsonResponse['message']}"), backgroundColor: Colors.red),
+            );
+          }
+        }
+      } else {
+         if(mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Erreur Serveur (PHP)"), backgroundColor: Colors.red),
+            );
+         }
+      }
+    } catch (e) {
+       if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Erreur connexion: $e"), backgroundColor: Colors.red),
+          );
+       }
+    } finally {
+      if(mounted) setState(() => isLoading = false);
+    }
   }
 
   @override
@@ -55,7 +160,7 @@ class _SignupPageState extends State<SignupPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // ----------------- HEADER -----------------
+            // HEADER
             Stack(
               children: [
                 ClipPath(
@@ -64,17 +169,9 @@ class _SignupPageState extends State<SignupPage> {
                     height: 220,
                     width: double.infinity,
                     decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [moroccoRed, darkRed],
-                      ),
+                      gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [moroccoRed, darkRed]),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: -40, right: -40,
-                  child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withOpacity(0.05)),
                 ),
                 SafeArea(
                   child: Padding(
@@ -82,10 +179,7 @@ class _SignupPageState extends State<SignupPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                        ),
+                        IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.white), onPressed: () => Navigator.pop(context)),
                         const SizedBox(height: 10),
                         const Text("Créer un compte", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
                         const Text("Rejoignez l'ambiance AFCON 2025", style: TextStyle(fontSize: 16, color: Colors.white70)),
@@ -96,7 +190,7 @@ class _SignupPageState extends State<SignupPage> {
               ],
             ),
 
-            // ----------------- FORM -----------------
+            // FORM
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: Form(
@@ -128,19 +222,29 @@ class _SignupPageState extends State<SignupPage> {
                     _customTextField("Mot de passe", Icons.lock_outline, passCtrl, isPassword: true),
                     const SizedBox(height: 25),
 
+                    // ------------------------------------------------
+                    // CHAUFFEUR FIELDS (PERMIS & DATE)
+                    // ------------------------------------------------
                     if (selectedRole == 'Chauffeur') ...[
                       const Divider(),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 10),
-                        child: Text("Info Véhicule", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                        child: Text("Informations Permis", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                       ),
-                      _customTextField("Modèle Voiture", Icons.car_rental, carModelCtrl),
+                      
+                      _customTextField("Numéro de Permis", Icons.card_membership, permisCtrl),
                       const SizedBox(height: 15),
-                      _customTextField("Matricule", Icons.confirmation_number_outlined, matriculeCtrl),
+                      
+                      // Custom Date Picker Field
+                      GestureDetector(
+                        onTap: _selectDate,
+                        child: AbsorbPointer(
+                          child: _customTextField("Date d'expiration", Icons.calendar_today, expirationCtrl),
+                        ),
+                      ),
                       const SizedBox(height: 25),
                     ],
 
-                    // Sign Up Button with Loading State
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -158,15 +262,9 @@ class _SignupPageState extends State<SignupPage> {
                     ),
 
                     const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Déjà un compte ? ", style: TextStyle(color: Colors.grey.shade600)),
-                        GestureDetector(
-                          onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage())),
-                          child: const Text("Se connecter", style: TextStyle(color: moroccoRed, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
+                    GestureDetector(
+                      onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginPage())),
+                      child: const Text("Déjà un compte ? Se connecter", style: TextStyle(color: moroccoRed, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 40),
                   ],
@@ -179,7 +277,6 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // ----------------- WIDGETS -----------------
   Widget _roleChip(String label, IconData icon, Color color) {
     bool isSelected = selectedRole == label;
     return GestureDetector(
@@ -228,73 +325,6 @@ class _SignupPageState extends State<SignupPage> {
       ),
     );
   }
-
-  // ----------------- API LOGIC (UPDATED WITH SHARED PREFERENCES) -----------------
-  Future<void> _handleSignup() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => isLoading = true);
-
-    const String apiUrl = "http://localhost:8888/Backend/api/signup.php";
-
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "nom": nameCtrl.text,
-          "prenom": prenomCtrl.text,
-          "email": emailCtrl.text,
-          "password": passCtrl.text,
-          "phone": phoneCtrl.text,
-          "role": selectedRole,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        var jsonResponse = jsonDecode(response.body);
-        
-        if (jsonResponse['success'] == true) {
-          
-          // --- FIX: SAVE USER DATA TO PHONE ---
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('nom', nameCtrl.text);
-          await prefs.setString('prenom', prenomCtrl.text);
-          await prefs.setString('email', emailCtrl.text);
-          await prefs.setString('telephone', phoneCtrl.text);
-          await prefs.setString('role', selectedRole);
-          await prefs.setBool('isLoggedIn', true);
-          // ------------------------------------
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Succès: ${jsonResponse['message']}"), backgroundColor: Colors.green),
-          );
-
-          if (selectedRole == 'Chauffeur') {
-             // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ChauffeurHomePage()));
-             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Compte Chauffeur créé !")));
-          } else {
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SupporteurAcceuil()));
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Erreur: ${jsonResponse['message']}"), backgroundColor: Colors.red),
-          );
-        }
-      } else {
-        var jsonResponse = jsonDecode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur: ${jsonResponse['message']}"), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur connexion: $e"), backgroundColor: Colors.red),
-      );
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
 }
 
 class SignupWaveClipper extends CustomClipper<Path> {
@@ -302,12 +332,8 @@ class SignupWaveClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     var path = Path();
     path.lineTo(0, size.height - 40);
-    var firstControlPoint = Offset(size.width / 4, size.height);
-    var firstEndPoint = Offset(size.width / 2.25, size.height - 30);
-    path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy, firstEndPoint.dx, firstEndPoint.dy);
-    var secondControlPoint = Offset(size.width - (size.width / 3.25), size.height - 80);
-    var secondEndPoint = Offset(size.width, size.height - 50);
-    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy, secondEndPoint.dx, secondEndPoint.dy);
+    path.quadraticBezierTo(size.width / 4, size.height, size.width / 2.25, size.height - 30);
+    path.quadraticBezierTo(size.width - (size.width / 3.25), size.height - 80, size.width, size.height - 50);
     path.lineTo(size.width, 0);
     path.close();
     return path;

@@ -19,6 +19,7 @@
         }
 
         public function inscrire($odc) {
+            // Check email
             $checkQuery = "SELECT * FROM utilisateur WHERE email_utilisateur = ?";
             $stmtCheck = $odc->prepare($checkQuery);
             $stmtCheck->bind_param("s", $this->email_utilisateur);
@@ -27,6 +28,7 @@
                 return "Cet email est déjà utilisé.";
             }
 
+            // Insert
             $query = "INSERT INTO utilisateur (nom_utilisateur, prenom_utilisateur, email_utilisateur, mot_de_passe_utilisateur, telephone_utilisateur, role_utilisateur, date_inscription) VALUES (?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $odc->prepare($query);
@@ -57,6 +59,10 @@
             
             $user = $result->fetch_assoc();
             $hashFromDB = $user['mot_de_passe_utilisateur'];
+
+            // DEBUGGING: Remove these lines after fixing!
+            // error_log("Password entered: " . $passe);
+            // error_log("Hash from DB: " . $hashFromDB);
 
             if (password_verify($passe, $hashFromDB)) {
                 return $user;
