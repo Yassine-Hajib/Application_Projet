@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; // IMPORT THIS
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 // IMPORTS
 import 'Signup.dart';
-import 'Acceuil.dart'; 
+import 'Acceuil.dart'; // Supporter Home
+import '../Yassine_Front/Chauffeur_acceuil.dart'; // <--- IMPORT CHAUFFEUR HOME
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -47,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
         body: jsonEncode({
           "email": emailCtrl.text,
           "password": passCtrl.text,
+          "role": selectedRole, // <--- CRITICAL: Sends the role to PHP
         }),
       );
 
@@ -60,45 +62,59 @@ class _LoginPageState extends State<LoginPage> {
           // ---------------------------------------------------
           // 1. SAVE USER DATA LOCALLY (SHARED PREFERENCES)
           // ---------------------------------------------------
-          var user = jsonResponse['user']; // The array sent from PHP
+          var user = jsonResponse['user']; 
+          // The backend returns the REAL role (e.g. "Chauffeur" or "Supporteur")
+          String dbRole = user['role_utilisateur'] ?? selectedRole;
+
           SharedPreferences prefs = await SharedPreferences.getInstance();
           
-          // Save each piece of info
           await prefs.setString('nom', user['nom_utilisateur'] ?? "");
           await prefs.setString('prenom', user['prenom_utilisateur'] ?? "");
           await prefs.setString('email', user['email_utilisateur'] ?? "");
           await prefs.setString('telephone', user['telephone_utilisateur'] ?? "");
-          await prefs.setString('role', user['role_utilisateur'] ?? "supporteur");
+          await prefs.setString('role', dbRole); 
           await prefs.setBool('isLoggedIn', true);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Bienvenue ${user['prenom_utilisateur']} !"), backgroundColor: Colors.green),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Bienvenue ${user['prenom_utilisateur']} !"), backgroundColor: Colors.green),
+            );
 
-          // 2. Navigate based on selected Chip
-          if (selectedRole == 'Supporteur') {
-             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SupporteurAcceuil()));
-          } else {
-             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Espace Chauffeur/Admin en construction...")));
+            // ---------------------------------------------------
+            // 2. NAVIGATE BASED ON DATABASE ROLE
+            // ---------------------------------------------------
+            if (dbRole == 'Chauffeur') {
+               Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ChauffeurHomePage()));
+            } else if (dbRole == 'Supporteur') {
+               Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SupporteurAcceuil()));
+            } else {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Espace Admin en construction...")));
+            }
           }
 
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Erreur: ${jsonResponse['message']}"), backgroundColor: Colors.red),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Erreur: ${jsonResponse['message']}"), backgroundColor: Colors.red),
+            );
+          }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Erreur Serveur"), backgroundColor: Colors.red),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Erreur Serveur"), backgroundColor: Colors.red),
+          );
+        }
       }
     } catch (e) {
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur de connexion"), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Erreur de connexion"), backgroundColor: Colors.red),
+        );
+      }
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 

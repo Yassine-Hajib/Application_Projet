@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 // -----------------------------------------------------------
 import 'Stades.dart';
 // NOUVEL IMPORT: Importation de la page de suivi
-import '../Sara_Front/suivie.dart'; 
 
 import '../Hiba_Front/Reservation.dart';
 import '../Hiba_Front/Evaluation.dart';
@@ -13,6 +12,7 @@ import '../Mohammed_Front/Parametres.dart';
 import '../Mohammed_Front/Profile.dart';
 import '../Rachid_Front/Aide.dart';
 import '../Rachid_Front/aboutus.dart';
+import '../Sara_Front/Suivie.dart';
 
 class SupporteurAcceuil extends StatelessWidget {
   const SupporteurAcceuil({super.key});
@@ -167,6 +167,7 @@ class SupporteurAcceuil extends StatelessWidget {
     switch (title) {
       
       // CAS MIS À JOUR: Navigue vers SuiviPage
+      
       case "Suivi des Matchs":
         Navigator.push(context, MaterialPageRoute(builder: (_) => const SuiviPage()));
         break;
