@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Note: Removed main() because this is a page inside the app, not a standalone app.
-
 class ReservationPage extends StatefulWidget {
   const ReservationPage({super.key});
 
@@ -23,13 +21,22 @@ class _ReservationPageState extends State<ReservationPage> {
     'Economique', 'Familial', 'Handicapé', 'Express', 'Navette', 'Business', 'Luxury'
   ];
 
-  final List<String> _typesVehicules = [
-    'Moto-Taxi', 'Taxi', 'Bus', 'Voiture', 'Voiture de luxe',
+  final List<Map<String, dynamic>> _typesVehicules = [
+    {'name': 'Moto-Taxi', 'icon': Icons.two_wheeler},
+    {'name': 'Taxi', 'icon': Icons.local_taxi},
+    {'name': 'Bus', 'icon': Icons.directions_bus},
+    {'name': 'Voiture', 'icon': Icons.directions_car},
+    {'name': 'Voiture de luxe', 'icon': Icons.diamond},
   ];
 
   // ---------------- API URL ----------------
-  // Update port if needed (8888 for MAMP, 80 for XAMPP)
   final String apiUrl = "http://localhost:8888/Backend/api/reservation.php";
+
+  // ---------------- COLORS ----------------
+  static const Color moroccoRed = Color(0xFFC1272D);
+  static const Color moroccoGreen = Color(0xFF006233);
+  static const Color darkRed = Color(0xFF8A1C21);
+  static const Color offWhite = Color(0xFFF8F9FA);
 
   // ---------------- LOGIC ----------------
   Future<void> _submitReservation() async {
@@ -43,7 +50,6 @@ class _ReservationPageState extends State<ReservationPage> {
     setState(() => isLoading = true);
 
     try {
-      // 1. Get User Email from Storage
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? email = prefs.getString('email');
 
@@ -55,7 +61,6 @@ class _ReservationPageState extends State<ReservationPage> {
         return;
       }
 
-      // 2. Send Data to Backend
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
@@ -67,15 +72,12 @@ class _ReservationPageState extends State<ReservationPage> {
         }),
       );
 
-      // 3. Handle Response
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Réservation confirmée avec succès !"), backgroundColor: Colors.green),
+            const SnackBar(content: Text("Réservation confirmée avec succès !"), backgroundColor: moroccoGreen),
           );
-          // Optional: Clear form or go back
-          // Navigator.pop(context); 
           _trajetCtrl.clear();
           setState(() {
             _selectedTypeReservation = null;
@@ -92,7 +94,6 @@ class _ReservationPageState extends State<ReservationPage> {
         );
       }
     } catch (e) {
-      print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Erreur de connexion"), backgroundColor: Colors.red),
       );
@@ -101,171 +102,298 @@ class _ReservationPageState extends State<ReservationPage> {
     }
   }
 
-  // ---------------- COLORS ----------------
-  static const Color moroccoRed = Color(0xFFC1272D);
-  static const Color moroccoGreen = Color(0xFF006233);
-  static const Color darkRed = Color(0xFF8A1C21);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      // Optional AppBar if you want a back button
-      appBar: AppBar(
-        title: const Text("Réserver un transport"),
-        backgroundColor: moroccoRed,
-        foregroundColor: Colors.white,
-      ),
+      backgroundColor: offWhite,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // ---------------- HEADER ----------------
+            // ---------------------------------------------
+            // --- HEADER (EXACTLY LIKE PROFILE PAGE) ---
+            // ---------------------------------------------
             Stack(
               children: [
                 ClipPath(
                   clipper: StadiumWaveClipper(),
                   child: Container(
-                    height: 200,
+                    height: 260,
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [moroccoRed, darkRed],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
+                        colors: [moroccoRed, darkRed],
                       ),
                     ),
                   ),
                 ),
                 Positioned(
-                  top: -30, right: -30,
-                  child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withOpacity(0.05)),
+                  top: -50, right: -50,
+                  child: CircleAvatar(radius: 100, backgroundColor: Colors.white.withOpacity(0.05)),
                 ),
-                const Positioned(
-                  bottom: 50,
-                  left: 20,
-                  child: Icon(Icons.directions_car_filled, size: 60, color: Colors.white24),
+                Positioned(
+                  bottom: 80, left: -30,
+                  child: CircleAvatar(radius: 60, backgroundColor: Colors.white.withOpacity(0.05)),
                 ),
-                const Positioned(
-                  bottom: 40,
-                  left: 20,
-                  child: Text(
-                    "Planifiez votre trajet",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InkWell(
+                              onTap: () => Navigator.pop(context),
+                              child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white30),
+                              ),
+                              child: const Text("AFCON 2025 🇲🇦", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 35),
+                        
+                        Row(
+                          children: [
+                            // ---------------------------------------------
+                            // --- AVATAR SECTION (PROFILE STYLE) ---
+                            // ---------------------------------------------
+                            Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: moroccoGreen, width: 3),
+                                color: Colors.white,
+                              ),
+                              child: CircleAvatar(
+                                radius: 32,
+                                backgroundColor: moroccoGreen.withOpacity(0.1), 
+                                // Changed Icon to Car to match Reservation context
+                                child: const Icon(
+                                  Icons.directions_car_filled, 
+                                  size: 35, 
+                                  color: moroccoGreen
+                                ),
+                              ),
+                            ),
+                            // ---------------------------------------------
+
+                            const SizedBox(width: 20),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Réservation", 
+                                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5)
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(color: moroccoGreen, borderRadius: BorderRadius.circular(4)),
+                                  child: const Text(
+                                    "TRANSPORT", 
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 20),
-
-            // ---------------- TRAJET ----------------
+            // ---------------- CONTENT ----------------
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: _trajetCtrl,
-                decoration: InputDecoration(
-                  labelText: "Trajet de réservation",
-                  hintText: "Ex : Hôtel → Stade Mohammed V",
-                  prefixIcon: const Icon(Icons.route, color: moroccoRed),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: moroccoGreen, width: 2),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  
+                  // 1. INPUT TRAJET
+                  _sectionTitle("Où voulez-vous aller ?"),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [BoxShadow(color: Colors.grey.shade200, blurRadius: 10, offset: const Offset(0, 5))],
+                    ),
+                    child: TextField(
+                      controller: _trajetCtrl,
+                      decoration: const InputDecoration(
+                        hintText: "Ex: Aéroport → Stade",
+                        prefixIcon: Icon(Icons.location_on, color: moroccoRed),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      ),
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 25),
+
+                  // 2. VEHICLE SELECTION (Horizontal Scroll)
+                  _sectionTitle("Choisissez votre véhicule"),
+                  SizedBox(
+                    height: 110,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _typesVehicules.length,
+                      separatorBuilder: (c, i) => const SizedBox(width: 15),
+                      itemBuilder: (context, index) {
+                        final item = _typesVehicules[index];
+                        final isSelected = _selectedVehiculeType == item['name'];
+                        return _buildVehicleCard(item['name'], item['icon'], isSelected);
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // 3. SERVICE TYPE (Chips / Grid)
+                  _sectionTitle("Type de service"),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: _typesReservationList.map((type) {
+                      final isSelected = _selectedTypeReservation == type;
+                      return _buildServiceChip(type, isSelected);
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // 4. CONFIRM BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _submitReservation,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: moroccoGreen,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        elevation: 5,
+                        shadowColor: moroccoGreen.withOpacity(0.4),
+                      ),
+                      child: isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("CONFIRMER", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1)),
+                              SizedBox(width: 10),
+                              Icon(Icons.check_circle, color: Colors.white)
+                            ],
+                          ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            // ---------------- TYPE DE RÉSERVATION ----------------
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade400)),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedTypeReservation,
-                    hint: const Row(children: [Icon(Icons.category, color: Colors.grey), SizedBox(width: 10), Text("Type de réservation")]),
-                    isExpanded: true,
-                    items: _typesReservationList.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
-                    onChanged: (value) => setState(() => _selectedTypeReservation = value),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ---------------- TYPE DE VÉHICULE ----------------
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade400)),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedVehiculeType,
-                    hint: const Row(children: [Icon(Icons.directions_car, color: Colors.grey), SizedBox(width: 10), Text("Type de véhicule")]),
-                    isExpanded: true,
-                    items: _typesVehicules.map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
-                    onChanged: (value) => setState(() => _selectedVehiculeType = value),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // ---------------- BOUTON ----------------
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: moroccoGreen,
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: isLoading ? null : _submitReservation,
-                  child: isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("CONFIRMER LA RÉSERVATION", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1)),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------- UI HELPERS ----------------
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+      ),
+    );
+  }
+
+  Widget _buildVehicleCard(String name, IconData icon, bool isSelected) {
+    return GestureDetector(
+      onTap: () => setState(() => _selectedVehiculeType = name),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 100,
+        decoration: BoxDecoration(
+          color: isSelected ? moroccoRed : Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: isSelected ? moroccoRed : Colors.grey.shade200, width: 2),
+          boxShadow: [
+             if(!isSelected) BoxShadow(color: Colors.grey.shade200, blurRadius: 5, offset: const Offset(0, 3))
+          ]
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : Colors.grey, size: 30),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12, 
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.black54
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceChip(String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTypeReservation = label),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? moroccoRed.withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: isSelected ? moroccoRed : Colors.grey.shade300),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? moroccoRed : Colors.black54,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
   }
 }
 
-// -------------------------------------------------------------
-// --- CLIPPER DÉCORATIF ---
-// -------------------------------------------------------------
+// ----------------- CLIPPER (COPIED FROM PROFILE PAGE) -----------------
 class StadiumWaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    Path path = Path();
-    path.lineTo(0, size.height - 40);
-    path.quadraticBezierTo(size.width / 2, size.height, size.width, size.height - 40);
+    var path = Path();
+    path.lineTo(0, size.height - 60);
+    var firstControlPoint = Offset(size.width / 4, size.height);
+    var firstEndPoint = Offset(size.width / 2.25, size.height - 40);
+    path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy, firstEndPoint.dx, firstEndPoint.dy);
+    var secondControlPoint = Offset(size.width - (size.width / 3.25), size.height - 90);
+    var secondEndPoint = Offset(size.width, size.height - 50);
+    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy, secondEndPoint.dx, secondEndPoint.dy);
+    path.lineTo(size.width, size.height - 40);
     path.lineTo(size.width, 0);
     path.close();
     return path;
   }
-
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
